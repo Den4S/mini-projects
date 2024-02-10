@@ -1,3 +1,8 @@
+# itmo_ml-course-24
+cars_dataset.csv
+
+
+.DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
