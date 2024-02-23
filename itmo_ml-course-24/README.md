@@ -48,13 +48,13 @@ Both models (`RandomFOrestRegressor` and `CatBoostRegressor`) have choosed quite
 
 **UPDATE (23.02.2024):** I have tried neural network to solve the task. The result was badder (or ~ same) than for `CatBoostRegressor`!
 
-#### Top cars to buy :laughing:
+#### `P.S.` Top cars to buy :laughing:
 
 <img
-  src="/hw02-project/top_cars/top_cars_catboost.png"
+  src="hw02-project/top_cars/top_cars_catboost.png"
   alt="Alt text"
   title="top_cars_catboost"
-  style="display: inline-block; margin: 0 auto; max-width: 500px">
+  style="display: inline-block; margin: 0 auto; width: 500px">
 
 _According to `CatBoostRegressor` model_
 
