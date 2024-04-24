@@ -4,7 +4,6 @@ catboost_info/
 
 
 # itmo_nlp-course-24
-/itmo_nlp-course-24/data/*.csv
 
 
 .DS_Store
