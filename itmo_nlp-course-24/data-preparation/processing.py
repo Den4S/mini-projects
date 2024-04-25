@@ -26,7 +26,7 @@ def process_raw_sentence(sentence):
     subs_by_space = ['\xa0']
     subs_by_period = ['…']
     
-    to_delete_arr= ['"', "'", '«', '»', '*']  # to delete
+    to_delete_arr= ['"', "'", '«', '»', '„', '“', '*']  # to delete
     cases_arr = ['(', ')', '[', ']']  # delete info in brackets
 
     sentence = sentence.lower()  # lowercase the sentence
