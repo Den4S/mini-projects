@@ -18,10 +18,9 @@ def process_raw_sentence(sentence):
     dashes = ['—', '–']
     
     subs_by_comma = [
-        '? ', '! ', ': ',
+        '? ', '! ', ': ', '; ',
         ', — ', ' — ',
-        ', – ', ' – ',  # another dash
-        '; '
+        ', – ', ' – ', ' ?,',  # another dash
     ]  # substitute by ', '
     subs_by_space = ['\xa0']
     subs_by_period = ['…']
@@ -52,18 +51,27 @@ def process_raw_sentence(sentence):
     
     # deleting of text in cases: '[*]' and the '(*)'
     sentence_no_cases = re.sub('[\(\[].*?[\)\]]', '', sentence)
+
     if len(sentence_no_cases) < 2:  # check if we have not deleted complete sentence
         for case in cases_arr:
             sentence = sentence.replace(case, '')
     else:
         sentence = sentence_no_cases
 
+    sentence = re.sub('[0-9][\)] ', '', sentence)  # remove numbers like `1)`, `2)` etc.
+
+
+    # clear words with links like `word1`
+    while re.search(r'[а-яА-Я]{1,}[0-9]', sentence):
+        word = re.sub(r'[0-9]', '', re.search(r'[а-яА-Я]{1,}[0-9]', sentence)[0])
+        sentence = re.sub(r'[а-яА-Я]{1,}[0-9]', word, sentence, count=1)
+        
     # punctuation in the end of the sentence can be multiple
     # for example: '...', '!..', '?..'
     # convert to:  '.', '!' and '?'
     n_of_last_punct = 0
     for char in sentence[::-1]:
-        if bool(re.search('[а-яА-Я]', char)):
+        if bool(re.search('[а-яА-Я0-9]', char)):
             break
         else:
             n_of_last_punct += 1
@@ -87,7 +95,8 @@ def process_raw_sentence(sentence):
     for end_punc in END_PUNC:
         sentence = sentence.replace('.', '')
 
-    sentence = re.sub(r'\s+,', ',', sentence)
+    # delete extra spaces
+    sentence = re.sub(r'[\s]*[,][\s]*', ', ', sentence)
     
     # check if the first symbol is a space (accidentally) - delete it
     if sentence[0] == ' ':
