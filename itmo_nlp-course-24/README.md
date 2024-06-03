@@ -43,7 +43,7 @@ Target  : 'C C S S C S S S S C S S S P'
 
 ### Baselines
 
-#### Random (statistics-based)
+#### 1. Random (statistics-based)
 Location: `baselines/random.ipynb`
 
 Predicting of punctuation marks with probabilities obtained from marks occurancy statistics in train dataset. 
@@ -62,8 +62,8 @@ F1 score          |0.178208          |0.054624          |0.900349          |0.05
 Average Levenshtein distance between predictions and targets: `3.671` (while average sentence len in test dataset was `12.94`)
 
 
-#### LSTM trainet on sequences of parts of speech
-Location: `baselines/lstm_speech_parts.ipynb`
+#### 2. LSTM trainet on sequences of parts of speech
+Location: `baselines/lstm_pos.ipynb`
 
 Example of the sentence preparation and tokenization:
 ```bash
@@ -82,7 +82,7 @@ Recall            |0.067620          |0.000000          |0.886228          |0.00
 F1 score          |0.099808          |0.000000          |0.196330          |0.000000          |0.619969          |
 ```
 
-Average Levenshtein distance: `7.433`
+Average Levenshtein distance: `7.433` (maximal is `19`)
 
 **LSTM NN was badly trained/performed!**
 Also it is possible that sequences of parts of speech are not enough for predicting sentence punctuation.
@@ -91,3 +91,71 @@ I'll try to fix the LSTM NN approach for the task in the second part of the proj
 
 ## Part 2
 
+Here I decided to concentrate on predicting only _the intrinsic punctuation_: commas or spaces within the sentence!
+Hence, in each target a finalizing mark (`.`, `!` or `?`) was replaced by the same token `F`
+(replacement performed in `data-preparation/edit_target_intr_punct.ipynb`).
+
+### New baselines
+
+#### 1. Bigrams classification model
+Location: `baselines/bigrams_classification.ipynb`
+
+Model that classifies bigrams, where a class is a punctuation sign between two words in bigram.
+Metrics are bad, but better tha metrics for incorrect LSTM-approach from previous part:
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.617602          |0.639752          |0.849541          |
+Recall            |0.352839          |0.647217          |0.924959          |
+F1 score          |0.449103          |0.643463          |0.885647          |
+```
+
+
+
+#### 2. X-Punctuator on lemmas sequences (THE BEST BASELINE)
+Location: `baselines/lstm_xpunct_lemmas.ipynb`
+
+The approach based on the X-Punctuation project from [github](https://github.com/kaituoxu/X-Punctuator/tree/master).
+Sentences in form of lemmas sequencies were used as network input.
+The obtained results are quite better (for commas prediction especially) than the previous ones:
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.621684          |1.000000          |0.893749          |
+Recall            |0.467274          |1.000000          |0.940331          |
+F1 score          |0.533531          |1.000000          |0.916449          |
+```
+Average Levenshtein distance: `1.689` (maximal is `13`)
+
+### Models
+
+#### X-Punctuator based model with `navec` embedding
+Location: `models/lstm_with_navec.ipynb`
+
+For LSTM based network all **metrics were improved**
+(except of small decreasing for end of sentence prediction)
+in contrast to metrics of X-Punctuator baseline!
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.687129          |1.000000          |0.918454          |
+Recall            |0.601647          |0.999102          |0.942514          |
+F1 score          |0.641553          |0.999551          |0.930329          |
+```
+Average Levenshtein distance: `1.391` (maximal is `13`)
+
+GRU-based network results:
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.723112          |1.000000          |0.909720          |
+Recall            |0.547898          |1.000000          |0.955976          |
+F1 score          |0.623428          |1.000000          |0.932275          |
+```
+Average Levenshtein distance: `1.368` (maximal is `10`)
+
+A bit better than LSTM-based approach but results of both models depends on 
+the randomized training process. 
+
+I was unable to make the training process reproducible, 
+but kept the model weights in `models/serialized` folder!
