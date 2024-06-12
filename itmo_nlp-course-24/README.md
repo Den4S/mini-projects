@@ -129,7 +129,7 @@ Average Levenshtein distance: `1.689` (maximal is `13`)
 
 ### Models
 
-#### X-Punctuator based model with `navec` embedding
+#### 1. X-Punctuator based model with `navec` embedding
 Location: `models/lstm_with_navec.ipynb`
 
 For LSTM based network all **metrics were improved**
@@ -159,3 +159,27 @@ the randomized training process.
 
 I was unable to make the training process reproducible, 
 but kept the model weights in `models/serialized` folder!
+
+#### 2. From Hygging Face: [`markusiko/rubert-base-punctuation`](https://huggingface.co/markusiko/rubert-base-punctuation)
+Location: `models/huggingface_model.ipynb`
+
+The model is built upon the foundation of [ruBert-base](https://huggingface.co/ai-forever/ruBert-base) and has been fine-tuned to correctly place punctuation marks in Russian sentences (it predicts the mark after each word).
+
+Some additional info about the model:
+
+- **Fine-Tuning Source:** The model has undergone fine-tuning using a diverse dataset comprising over 20,000 paragraphs from Russian literary works. 
+- **Supported Classes:** The model is designed to predict classes following specific punctuation marks: ? ! . , : ... and space (as class O).
+- **Input Format:** To achieve optimal results, input text should be provided without punctuation marks. The model does not process changes in letter case.
+
+Metrics _from the box_:
+```
+                |comma (`,`)     |excl. (`!`)     |point (`.`)     |question (`?`)  |space (` `)     |
+----------------|----------------|----------------|----------------|----------------|----------------|
+Precision       |0.913819        |0.405941        |0.763220        |0.567123        |0.975520        |
+Recall          |0.774770        |0.232955        |0.960040        |0.824701        |0.983370        |
+F1 score        |0.838569        |0.296029        |0.850390        |0.672078        |0.979430        |
+```
+
+Good results!
+
+**Finetuning**:
