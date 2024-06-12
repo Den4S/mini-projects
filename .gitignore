@@ -5,6 +5,7 @@ catboost_info/
 
 # itmo_nlp-course-24
 *.tar
+ner/
 
 .DS_Store
 
