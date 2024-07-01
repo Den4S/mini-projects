@@ -43,7 +43,7 @@ Target  : 'C C S S C S S S S C S S S P'
 
 ### Baselines
 
-#### Random (statistics-based)
+#### 1. Random (statistics-based)
 Location: `baselines/random.ipynb`
 
 Predicting of punctuation marks with probabilities obtained from marks occurancy statistics in train dataset. 
@@ -62,8 +62,8 @@ F1 score          |0.178208          |0.054624          |0.900349          |0.05
 Average Levenshtein distance between predictions and targets: `3.671` (while average sentence len in test dataset was `12.94`)
 
 
-#### LSTM trainet on sequences of parts of speech
-Location: `baselines/lstm_speech_parts.ipynb`
+#### 2. LSTM trainet on sequences of parts of speech
+Location: `baselines/lstm_pos.ipynb`
 
 Example of the sentence preparation and tokenization:
 ```bash
@@ -82,7 +82,7 @@ Recall            |0.067620          |0.000000          |0.886228          |0.00
 F1 score          |0.099808          |0.000000          |0.196330          |0.000000          |0.619969          |
 ```
 
-Average Levenshtein distance: `7.433`
+Average Levenshtein distance: `7.433` (maximal is `19`)
 
 **LSTM NN was badly trained/performed!**
 Also it is possible that sequences of parts of speech are not enough for predicting sentence punctuation.
@@ -91,3 +91,126 @@ I'll try to fix the LSTM NN approach for the task in the second part of the proj
 
 ## Part 2
 
+Here I decided to concentrate on predicting only _the intrinsic punctuation_: commas or spaces within the sentence!
+Hence, in each target a finalizing mark (`.`, `!` or `?`) was replaced by the same token `F`
+(replacement performed in `data-preparation/edit_target_intr_punct.ipynb`).
+
+### New baselines
+
+#### 1. Bigrams classification model
+Location: `baselines/bigrams_classification.ipynb`
+
+Model that classifies bigrams, where a class is a punctuation sign between two words in bigram.
+Metrics are bad, but better tha metrics for incorrect LSTM-approach from previous part:
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.617602          |0.639752          |0.849541          |
+Recall            |0.352839          |0.647217          |0.924959          |
+F1 score          |0.449103          |0.643463          |0.885647          |
+```
+
+
+
+#### 2. X-Punctuator on lemmas sequences (THE BEST BASELINE)
+Location: `baselines/lstm_xpunct_lemmas.ipynb`
+
+The approach based on the X-Punctuation project from [github](https://github.com/kaituoxu/X-Punctuator/tree/master).
+Sentences in form of lemmas sequencies were used as network input.
+The obtained results are quite better (for commas prediction especially) than the previous ones:
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.621684          |1.000000          |0.893749          |
+Recall            |0.467274          |1.000000          |0.940331          |
+F1 score          |0.533531          |1.000000          |0.916449          |
+```
+Average Levenshtein distance: `1.689` (maximal is `13`)
+
+### Models
+
+#### 1. X-Punctuator based model with `navec` embedding
+Location: `models/lstm_with_navec.ipynb`
+
+For LSTM based network all **metrics were improved**
+(except of small decreasing for end of sentence prediction)
+in contrast to metrics of X-Punctuator baseline!
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.687129          |1.000000          |0.918454          |
+Recall            |0.601647          |0.999102          |0.942514          |
+F1 score          |0.641553          |0.999551          |0.930329          |
+```
+Average Levenshtein distance: `1.391` (maximal is `13`)
+
+GRU-based network results:
+```
+                  |comma (`,`)       |end of sent       |space (` `)       |
+------------------|------------------|------------------|------------------|
+Precision         |0.723112          |1.000000          |0.909720          |
+Recall            |0.547898          |1.000000          |0.955976          |
+F1 score          |0.623428          |1.000000          |0.932275          |
+```
+Average Levenshtein distance: `1.368` (maximal is `10`)
+
+A bit better than LSTM-based approach but results of both models depends on 
+the randomized training process. 
+
+I was unable to make the training process reproducible, 
+but kept the model weights in `models/serialized` folder!
+
+#### 2. From Hygging Face: [`markusiko/rubert-base-punctuation`](https://huggingface.co/markusiko/rubert-base-punctuation)
+Location: `models/huggingface_model.ipynb`
+
+The model is built upon the foundation of [ruBert-base](https://huggingface.co/ai-forever/ruBert-base) and has been fine-tuned to correctly place punctuation marks in Russian sentences (it predicts the mark after each word).
+
+Some additional info about the model:
+
+- **Fine-Tuning Source:** The model has undergone fine-tuning using a diverse dataset comprising over 20,000 paragraphs from Russian literary works. 
+- **Supported Classes:** The model is designed to predict classes following specific punctuation marks: ? ! . , : ... and space (as class O).
+- **Input Format:** To achieve optimal results, input text should be provided without punctuation marks. The model does not process changes in letter case.
+
+Metrics _from the box_ (**all data**):
+```
+                |comma (`,`)     |excl. (`!`)     |point (`.`)     |question (`?`)  |space (` `)     |
+----------------|----------------|----------------|----------------|----------------|----------------|
+Precision       |0.913819        |0.405941        |0.763220        |0.567123        |0.975520        |
+Recall          |0.774770        |0.232955        |0.960040        |0.824701        |0.983370        |
+F1 score        |0.838569        |0.296029        |0.850390        |0.672078        |0.979430        |
+```
+
+Good results! Better metrics for commas and spaces classification.
+
+Metrics on the selected **test** subset:
+```
+                |comma (`,`)     |excl. (`!`)     |point (`.`)     |question (`?`)  |space (` `)     |
+----------------|----------------|----------------|----------------|----------------|----------------|
+Precision       |0.925430        |0.428571        |0.784274        |0.623377        |0.975571        |
+Recall          |0.782749        |0.200000        |0.967662        |0.827586        |0.986069        |
+F1 score        |0.848131        |0.272727        |0.866370        |0.711111        |0.980792        |
+```
+
+#### 3. Fine-tuning of the model
+Location: `models/finetuning.ipynb`\
+[Code reference](https://github.com/Markusiko/RuPunctNet/blob/8bc765ddbd3f61822efc6ed6272fb5960dc8a37e/DL_experiments/bert-base.ipynb#L929)
+
+Metrics on **all data**:
+```
+                |comma (`,`)     |excl. (`!`)     |point (`.`)     |question (`?`)  |space (` `)     |
+----------------|----------------|----------------|----------------|----------------|----------------|
+Precision       |0.971699        |0.802198        |0.973858        |0.860294        |0.992787        |
+Recall          |0.965740        |0.414773        |0.989327        |0.932271        |0.994070        |
+F1 score        |0.968710        |0.546816        |0.981532        |0.894837        |0.993428        |
+```
+
+Metrics on the same **test** subset:
+```
+                |comma (`,`)     |excl. (`!`)     |point (`.`)     |question (`?`)  |space (` `)     |
+----------------|----------------|----------------|----------------|----------------|----------------|
+Precision       |0.936912        |0.500000        |0.958587        |0.770492        |0.981751        |
+Recall          |0.912668        |0.166667        |0.978856        |0.810345        |0.987088        |
+F1 score        |0.924631        |0.250000        |0.968615        |0.789916        |0.984412        |
+```
+
+**Conclusion:** Metrics increased for all punctuation marks, except (maybe) for exclamation point!
