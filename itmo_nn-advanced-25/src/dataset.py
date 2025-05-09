@@ -265,6 +265,8 @@ class WeizmannSeqs(Dataset):
                 [self.transformations(frame) for frame in sequence_raw], dim=0
             )
         else:
-            sequence_item = sequence_raw
+            sequence_item = torch.stack(
+                sequence_raw, dim=0
+            )
 
         return sequence_item, label

@@ -1,0 +1,1 @@
+{"data_path": "data/", "results_path": "results/exp_09-05-2025_19-23", "sequence_len": 3, "skip_between_frames": 2, "augmentation_flip": true, "center_silhouettes": true, "exclude_cutted_silhouettes": true, "weighted_classes": true, "feature_dim": 16, "hidden_dim": 16, "DEVICE": "cpu", "train_batch_size": 10, "val_batch_size": 20, "adam_lr": 0.001, "number_of_epochs": 10}
